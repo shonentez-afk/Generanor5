@@ -4,7 +4,7 @@
 
 ## 🚀 Запустить
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shonentez-afk/Generanor5/blob/main/vibro_diagnosis.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/shonentez-afk/Generanor5/blob/main/generato6.ipynb)
 
 **Нажмите на кнопку выше** — notebook откроется в Google Colab и сразу заработает!
 
