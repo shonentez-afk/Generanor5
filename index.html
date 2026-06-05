@@ -412,17 +412,11 @@
             
             if (fHigh >= fs / 2) fHigh = (fs / 2) * 0.9;
             
-            // Упрощенная фильтрация (полосовой фильтр)
             const filtered = bandpassFilter(sig, fLow, fHigh, fs);
-            
-            // Детектирование огибающей
             const rectified = filtered.map(Math.abs);
             const envelope = lowpassFilter(rectified, Math.min(1500, fs / 4), fs);
-            
-            // FFT
             const { xf, amplitude } = simpleFFT(envelope, fs);
             
-            // Ограничение до 1000 Гц
             const mask = xf.map(f => f <= 1000);
             const xfMasked = xf.filter((_, i) => mask[i]);
             const ampMasked = amplitude.filter((_, i) => mask[i]);
@@ -431,7 +425,6 @@
         }
 
         function bandpassFilter(signal, fLow, fHigh, fs) {
-            // Упрощенный полосовой фильтр
             const filtered = [];
             const omegaLow = 2 * Math.PI * fLow / fs;
             const omegaHigh = 2 * Math.PI * fHigh / fs;
@@ -449,7 +442,6 @@
         }
 
         function lowpassFilter(signal, cutoff, fs) {
-            // Простой ФНЧ (скользящее среднее)
             const windowSize = Math.floor(fs / cutoff / 2);
             const filtered = [];
             
@@ -470,7 +462,6 @@
             const xf = [];
             const amplitude = [];
             
-            // Упрощенное БПФ (используем только первые 500 Гц)
             const maxFreq = 500;
             const freqStep = fs / N;
             const numBins = Math.floor(maxFreq / freqStep);
@@ -504,12 +495,10 @@
             const defect = document.getElementById('defect').value;
             const stage = parseInt(document.getElementById('stage').value);
             
-            // Обновить отображения значений
             document.getElementById('rpm-value').textContent = rpm;
             document.getElementById('stage-value').textContent = stage;
             document.getElementById('bearing-type').textContent = BEARINGS_DB[bearing].type;
             
-            // Расчет частот
             const freqs = calculateFrequencies(bearing, rpm);
             
             document.getElementById('bpfo').textContent = freqs.BPFO.toFixed(2) + ' Гц';
@@ -519,11 +508,9 @@
             document.getElementById('bsf2').textContent = freqs['2xBSF'].toFixed(2) + ' Гц';
             document.getElementById('fr-display').textContent = freqs.fr.toFixed(2) + ' Гц (' + rpm + ' об/мин)';
             
-            // Генерация сигнала
             const { t, signalData, freqs: f } = generateFaultSignal(rpm, bearing, defect, stage, 0.3, 50000, fc);
             const { xf, amplitude, envelope } = processEnvelope(signalData, 50000, fc, bandwidth);
             
-            // Построение графиков
             plotSignal(t, signalData);
             plotEnvelope(t, envelope, fc, bandwidth);
             plotSpectrumLinear(xf, amplitude, freqs);
@@ -572,88 +559,66 @@
             Plotly.newPlot('plot2', data, layout, { responsive: true, displayModeBar: false });
         }
 
-       function plotSpectrumLinear(xf, amplitude, freqs) {
-    const data = [{
-        x: xf,
-        y: amplitude,
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: '#006400', width: 1 },
-        name: 'Спектр'
-    }];
-    
-    const colors = {
-        'BPFO': 'red',
-        'BPFI': 'blue',
-        'BSF': 'green',
-        'FTF': 'orange',
-        '2xBSF': 'magenta'
-    };
-    
-    const shapes = [];
-    const maxAmp = Math.max(...amplitude) * 1.1;
-    
-    // Добавляем вертикальные линии И трассы для легенды
-    for (const [defectName, color] of Object.entries(colors)) {
-        const fVal = freqs[defectName];
-        if (fVal > 0 && fVal < 500) {
-            // Основная частота
-            shapes.push({
-                type: 'line',
-                x0: fVal, x1: fVal,
-                y0: 0, y1: maxAmp,
-                line: { color: color, width: 2, dash: 'dash' }
-            });
-            
-            // Добавляем трассу для легенды (невидимую точку)
-            data.push({
-                x: [fVal],
-                y: [maxAmp],
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ С ЛЕГЕНДОЙ
+        function plotSpectrumLinear(xf, amplitude, freqs) {
+            const data = [{
+                x: xf,
+                y: amplitude,
                 type: 'scatter',
-                mode: 'markers',
-                marker: { 
-                    color: color, 
-                    size: 0,  // Невидимый маркер
-                    symbol: 'line-ns-open'
-                },
-                name: `${defectName}=${fVal.toFixed(1)} Гц`,
-                showlegend: true,
-                hoverinfo: 'skip'
-            });
+                mode: 'lines',
+                line: { color: '#006400', width: 1 },
+                name: 'Спектр'
+            }];
             
-            // Гармоники (2x, 3x)
-            for (let h = 2; h <= 3; h++) {
-                const harmonic = fVal * h;
-                if (harmonic < 500) {
+            const colors = {
+                'BPFO': 'red',
+                'BPFI': 'blue',
+                'BSF': 'green',
+                'FTF': 'orange',
+                '2xBSF': 'magenta'
+            };
+            
+            const shapes = [];
+            const maxAmp = Math.max(...amplitude) * 1.1;
+            
+            for (const [defectName, color] of Object.entries(colors)) {
+                const fVal = freqs[defectName];
+                if (fVal > 0 && fVal < 500) {
                     shapes.push({
                         type: 'line',
-                        x0: harmonic, x1: harmonic,
+                        x0: fVal, x1: fVal,
                         y0: 0, y1: maxAmp,
-                        line: { color: color, width: 1, dash: 'dot' }
+                        line: { color: color, width: 2, dash: 'dash' }
                     });
+                    
+                    data.push({
+                        x: [fVal],
+                        y: [maxAmp],
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: { 
+                            color: color, 
+                            size: 0,
+                            symbol: 'line-ns-open'
+                        },
+                        name: `${defectName}=${fVal.toFixed(1)} Гц`,
+                        showlegend: true,
+                        hoverinfo: 'skip'
+                    });
+                    
+                    for (let h = 2; h <= 3; h++) {
+                        const harmonic = fVal * h;
+                        if (harmonic < 500) {
+                            shapes.push({
+                                type: 'line',
+                                x0: harmonic, x1: harmonic,
+                                y0: 0, y1: maxAmp,
+                                line: { color: color, width: 1, dash: 'dot' }
+                            });
+                        }
+                    }
                 }
             }
-        }
-    }
-    
-    const layout = {
-        title: 'Спектр огибающей (линейная шкала)',
-        xaxis: { title: 'Частота, Гц', range: [0, 500] },
-        yaxis: { title: 'Амплитуда, g' },
-        margin: { t: 30, b: 40, l: 50, r: 20 },
-        shapes: shapes,
-        showlegend: true,
-        legend: { 
-            x: 1, 
-            y: 1, 
-            xanchor: 'right',
-            yanchor: 'top',
-            font: { size: 9 }
-        }
-    };
-    
-    Plotly.newPlot('plot3', data, layout, { responsive: true, displayModeBar: false });
-}
             
             const layout = {
                 title: 'Спектр огибающей (линейная шкала)',
@@ -662,111 +627,114 @@
                 margin: { t: 30, b: 40, l: 50, r: 20 },
                 shapes: shapes,
                 showlegend: true,
-                legend: { x: 1, y: 1, xanchor: 'right' }
+                legend: { 
+                    x: 1, 
+                    y: 1, 
+                    xanchor: 'right',
+                    yanchor: 'top',
+                    font: { size: 9 }
+                }
             };
             
             Plotly.newPlot('plot3', data, layout, { responsive: true, displayModeBar: false });
         }
 
+        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ С ЛЕГЕНДОЙ И АННОТАЦИЯМИ
         function plotSpectrumLog(xf, amplitude, freqs) {
-    const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
-    const maxDb = Math.max(...ampDb);
-    
-    const data = [{
-        x: xf,
-        y: ampDb,
-        type: 'scatter',
-        mode: 'lines',
-        line: { color: '#800080', width: 1 },
-        name: 'Спектр'
-    }];
-    
-    const colors = {
-        'BPFO': 'red',
-        'BPFI': 'blue',
-        'BSF': 'green',
-        'FTF': 'orange',
-        '2xBSF': 'magenta'
-    };
-    
-    const shapes = [];
-    const annotations = [];
-    
-    for (const [defectName, color] of Object.entries(colors)) {
-        const fVal = freqs[defectName];
-        if (fVal > 0 && fVal < 500) {
-            // Вертикальная линия
-            shapes.push({
-                type: 'line',
-                x0: fVal, x1: fVal,
-                y0: -80, y1: maxDb + 5,
-                line: { color: color, width: 2, dash: 'dash' }
-            });
+            const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
+            const maxDb = Math.max(...ampDb);
             
-            // Трасса для легенды
-            data.push({
-                x: [fVal],
-                y: [maxDb],
+            const data = [{
+                x: xf,
+                y: ampDb,
                 type: 'scatter',
-                mode: 'markers',
-                marker: { color: color, size: 0 },
-                name: `${defectName}=${fVal.toFixed(1)} Гц`,
-                showlegend: true,
-                hoverinfo: 'skip'
-            });
+                mode: 'lines',
+                line: { color: '#800080', width: 1 },
+                name: 'Спектр'
+            }];
             
-            // Аннотации (подписи на графике)
-            const idx = xf.findIndex(f => Math.abs(f - fVal) < 5);
-            if (idx >= 0 && ampDb[idx] > -60) {
-                annotations.push({
-                    x: fVal,
-                    y: ampDb[idx],
-                    text: `${defectName}<br>${fVal.toFixed(1)} Гц`,
-                    showarrow: true,
-                    arrowhead: 2,
-                    ax: 10,
-                    ay: -20,
-                    font: { color: color, size: 10 },
-                    bgcolor: 'white',
-                    bordercolor: color,
-                    borderwidth: 1
-                });
-            }
+            const colors = {
+                'BPFO': 'red',
+                'BPFI': 'blue',
+                'BSF': 'green',
+                'FTF': 'orange',
+                '2xBSF': 'magenta'
+            };
             
-            // Гармоники
-            for (let h = 2; h <= 3; h++) {
-                const harmonic = fVal * h;
-                if (harmonic < 500) {
+            const shapes = [];
+            const annotations = [];
+            
+            for (const [defectName, color] of Object.entries(colors)) {
+                const fVal = freqs[defectName];
+                if (fVal > 0 && fVal < 500) {
                     shapes.push({
                         type: 'line',
-                        x0: harmonic, x1: harmonic,
+                        x0: fVal, x1: fVal,
                         y0: -80, y1: maxDb + 5,
-                        line: { color: color, width: 1, dash: 'dot' }
+                        line: { color: color, width: 2, dash: 'dash' }
                     });
+                    
+                    data.push({
+                        x: [fVal],
+                        y: [maxDb],
+                        type: 'scatter',
+                        mode: 'markers',
+                        marker: { color: color, size: 0 },
+                        name: `${defectName}=${fVal.toFixed(1)} Гц`,
+                        showlegend: true,
+                        hoverinfo: 'skip'
+                    });
+                    
+                    const idx = xf.findIndex(f => Math.abs(f - fVal) < 5);
+                    if (idx >= 0 && ampDb[idx] > -60) {
+                        annotations.push({
+                            x: fVal,
+                            y: ampDb[idx],
+                            text: `${defectName}<br>${fVal.toFixed(1)} Гц`,
+                            showarrow: true,
+                            arrowhead: 2,
+                            ax: 10,
+                            ay: -20,
+                            font: { color: color, size: 10 },
+                            bgcolor: 'white',
+                            bordercolor: color,
+                            borderwidth: 1
+                        });
+                    }
+                    
+                    for (let h = 2; h <= 3; h++) {
+                        const harmonic = fVal * h;
+                        if (harmonic < 500) {
+                            shapes.push({
+                                type: 'line',
+                                x0: harmonic, x1: harmonic,
+                                y0: -80, y1: maxDb + 5,
+                                line: { color: color, width: 1, dash: 'dot' }
+                            });
+                        }
+                    }
                 }
             }
+            
+            const layout = {
+                title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
+                xaxis: { title: 'Частота, Гц', range: [0, 500] },
+                yaxis: { title: 'Амплитуда, дБ', range: [-80, maxDb + 5] },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                shapes: shapes,
+                annotations: annotations,
+                showlegend: true,
+                legend: { 
+                    x: 1, 
+                    y: 1, 
+                    xanchor: 'right',
+                    yanchor: 'top',
+                    font: { size: 9 }
+                }
+            };
+            
+            Plotly.newPlot('plot4', data, layout, { responsive: true, displayModeBar: false });
         }
-    }
-    
-    const layout = {
-        title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
-        xaxis: { title: 'Частота, Гц', range: [0, 500] },
-        yaxis: { title: 'Амплитуда, дБ', range: [-80, maxDb + 5] },
-        margin: { t: 30, b: 40, l: 50, r: 20 },
-        shapes: shapes,
-        annotations: annotations,
-        showlegend: true,
-        legend: { 
-            x: 1, 
-            y: 1, 
-            xanchor: 'right',
-            yanchor: 'top',
-            font: { size: 9 }
-        }
-    };
-    
-    Plotly.newPlot('plot4', data, layout, { responsive: true, displayModeBar: false });
-}
 
         // ============================================================
         // ИГРА "УГАДАЙ ДЕФЕКТ"
@@ -803,11 +771,9 @@
             document.getElementById('exam-answer').style.display = 'none';
             document.getElementById('btn-show-answer').disabled = false;
             
-            // Генерация графика экзамена
             const { signalData } = generateFaultSignal(rpm, bearing, defect, stage, 0.3, 50000, fc);
             const { xf, amplitude } = processEnvelope(signalData, 50000, fc, bandwidth);
             
-            // Линейный спектр
             Plotly.newPlot('exam-plot1', [{
                 x: xf, y: amplitude, type: 'scatter', mode: 'lines',
                 line: { color: '#006400', width: 1 }
@@ -818,7 +784,6 @@
                 showlegend: false
             }, { responsive: true, displayModeBar: false });
             
-            // Логарифмический спектр
             const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
             Plotly.newPlot('exam-plot2', [{
                 x: xf, y: ampDb, type: 'scatter', mode: 'lines',
@@ -859,7 +824,6 @@
         // ИНИЦИАЛИЗАЦИЯ
         // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
-            // Обработчики событий
             document.getElementById('bearing').addEventListener('change', updateDisplay);
             document.getElementById('rpm').addEventListener('input', updateDisplay);
             document.getElementById('fc').addEventListener('change', updateDisplay);
@@ -867,7 +831,6 @@
             document.getElementById('defect').addEventListener('change', updateDisplay);
             document.getElementById('stage').addEventListener('input', updateDisplay);
             
-            // Первоначальное отображение
             updateDisplay();
         });
     </script>
