@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔧 Виртуальный стенд вибродиагностики</title>
+    <title> Виртуальный стенд вибродиагностики</title>
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -188,7 +188,7 @@
         
         <div class="main-layout">
             <div class="sidebar">
-                <h2>⚙️ Параметры</h2>
+                <h2>️ Параметры</h2>
                 
                 <div class="field">
                     <label>🔩 Подшипник</label>
@@ -213,7 +213,7 @@
                 </div>
                 
                 <div class="field">
-                    <label> Центральная частота fc (Гц)</label>
+                    <label>📡 Центральная частота fc (Гц)</label>
                     <select id="fc">
                         <option value="800">800</option>
                         <option value="1600">1600</option>
@@ -225,7 +225,7 @@
                 </div>
                 
                 <div class="field">
-                    <label>🔧 Тип фильтра</label>
+                    <label> Тип фильтра</label>
                     <select id="bandwidth">
                         <option value="1/3 октавы" selected>1/3 октавы</option>
                         <option value="1 октава">1 октава</option>
@@ -283,8 +283,8 @@
                     <h3 style="margin-bottom: 12px;"> Графики анализа</h3>
                     <div id="plot1" style="height: 240px;"></div>
                     <div id="plot2" style="height: 240px; margin-top: 12px;"></div>
-                    <div id="plot3" style="height: 300px; margin-top: 12px;"></div>
-                    <div id="plot4" style="height: 320px; margin-top: 12px;"></div>
+                    <div id="plot3" style="height: 320px; margin-top: 12px;"></div>
+                    <div id="plot4" style="height: 360px; margin-top: 12px;"></div>
                 </div>
                 
                 <div class="exam-section">
@@ -296,7 +296,7 @@
                     <div id="exam-info" class="exam-info" style="display: none;"></div>
                     <div id="exam-plots" style="display: none;">
                         <div id="exam-plot1" style="height: 220px;"></div>
-                        <div id="exam-plot2" style="height: 240px; margin-top: 8px;"></div>
+                        <div id="exam-plot2" style="height: 260px; margin-top: 8px;"></div>
                     </div>
                     <div id="exam-answer" class="answer-box" style="display: none;"></div>
                 </div>
@@ -513,10 +513,10 @@
             }];
             
             const layout = {
-                title: 'Исходный временной сигнал',
-                xaxis: { title: 'Время, мс', range: [0, 50] },
-                yaxis: { title: 'Ускорение, g' },
-                margin: { t: 40, b: 50, l: 70, r: 20 },
+                title: { text: 'Исходный временной сигнал', font: { size: 14 }, y: 0.95 },
+                xaxis: { title: { text: 'Время, мс', font: { size: 12 } }, range: [0, 50] },
+                yaxis: { title: { text: 'Ускорение, g', font: { size: 12 } } },
+                margin: { t: 50, b: 60, l: 80, r: 20 },
                 showlegend: false
             };
             
@@ -534,10 +534,10 @@
             }];
             
             const layout = {
-                title: `Огибающая (fc=${fc} Гц, фильтр ${bandwidth})`,
-                xaxis: { title: 'Время, мс', range: [0, 50] },
-                yaxis: { title: 'Огибающая, g' },
-                margin: { t: 40, b: 50, l: 70, r: 20 },
+                title: { text: `Огибающая (fc=${fc} Гц, фильтр ${bandwidth})`, font: { size: 14 }, y: 0.95 },
+                xaxis: { title: { text: 'Время, мс', font: { size: 12 } }, range: [0, 50] },
+                yaxis: { title: { text: 'Огибающая, g', font: { size: 12 } } },
+                margin: { t: 50, b: 60, l: 80, r: 20 },
                 showlegend: false
             };
             
@@ -605,29 +605,34 @@
             }
             
             const layout = {
-                title: 'Спектр огибающей (линейная шкала)',
-                xaxis: { 
-                    title: 'Частота, Гц', 
-                    range: [0, 500],
-                    domain: [0, 0.85]
+                title: {
+                    text: 'Спектр огибающей (линейная шкала)',
+                    font: { size: 14 },
+                    y: 0.95
                 },
-                yaxis: { title: 'Амплитуда, g' },
-                margin: { t: 40, b: 50, l: 70, r: 20 },
+                xaxis: { 
+                    title: { text: 'Частота, Гц', font: { size: 12 } },
+                    range: [0, 500],
+                    domain: [0, 0.82]
+                },
+                yaxis: { 
+                    title: { text: 'Амплитуда, g', font: { size: 12 } },
+                    range: [0, maxAmp]
+                },
+                margin: { t: 50, b: 60, l: 80, r: 20 },
                 shapes: shapes,
                 showlegend: true,
                 legend: { 
                     orientation: 'v',
-                    x: 0.87,
-                    y: 1,
+                    x: 0.84,
+                    y: 0.98,
                     xanchor: 'left',
                     yanchor: 'top',
                     font: { size: 9 },
                     traceorder: 'normal',
                     bgcolor: 'rgba(255,255,255,0.95)',
                     bordercolor: '#ddd',
-                    borderwidth: 1,
-                    xgap: 5,
-                    ygap: 2
+                    borderwidth: 1
                 }
             };
             
@@ -637,6 +642,10 @@
         function plotSpectrumLog(xf, amplitude, freqs) {
             const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
             const maxDb = Math.max(...ampDb);
+            
+            // Динамический диапазон Y — чтобы график не выходил за пределы
+            const yMin = Math.max(-100, Math.min(-80, maxDb - 40));
+            const yMax = maxDb + 10;
             
             const data = [{
                 x: xf,
@@ -664,13 +673,13 @@
                     shapes.push({
                         type: 'line',
                         x0: fVal, x1: fVal,
-                        y0: -80, y1: maxDb + 5,
+                        y0: yMin, y1: yMax,
                         line: { color: color, width: 2, dash: 'dash' }
                     });
                     
                     data.push({
                         x: [fVal],
-                        y: [maxDb],
+                        y: [yMax],
                         type: 'scatter',
                         mode: 'markers',
                         marker: { color: color, size: 0 },
@@ -680,7 +689,7 @@
                     });
                     
                     const idx = xf.findIndex(f => Math.abs(f - fVal) < 5);
-                    if (idx >= 0 && ampDb[idx] > -60) {
+                    if (idx >= 0 && ampDb[idx] > yMin + 10) {
                         annotations.push({
                             x: fVal,
                             y: ampDb[idx],
@@ -702,7 +711,7 @@
                             shapes.push({
                                 type: 'line',
                                 x0: harmonic, x1: harmonic,
-                                y0: -80, y1: maxDb + 5,
+                                y0: yMin, y1: yMax,
                                 line: { color: color, width: 1, dash: 'dot' }
                             });
                         }
@@ -711,33 +720,35 @@
             }
             
             const layout = {
-                title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
+                title: {
+                    text: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
+                    font: { size: 14 },
+                    y: 0.95
+                },
                 xaxis: { 
-                    title: 'Частота, Гц', 
+                    title: { text: 'Частота, Гц', font: { size: 12 } },
                     range: [0, 500],
-                    domain: [0, 0.85]
+                    domain: [0, 0.82]
                 },
                 yaxis: { 
-                    title: 'Амплитуда, дБ', 
-                    range: [-80, maxDb + 5] 
+                    title: { text: 'Амплитуда, дБ', font: { size: 12 } },
+                    range: [yMin, yMax]
                 },
-                margin: { t: 40, b: 50, l: 70, r: 20 },
+                margin: { t: 60, b: 60, l: 80, r: 20 },
                 shapes: shapes,
                 annotations: annotations,
                 showlegend: true,
                 legend: { 
                     orientation: 'v',
-                    x: 0.87,
-                    y: 1,
+                    x: 0.84,
+                    y: 0.98,
                     xanchor: 'left',
                     yanchor: 'top',
                     font: { size: 9 },
                     traceorder: 'normal',
                     bgcolor: 'rgba(255,255,255,0.95)',
                     bordercolor: '#ddd',
-                    borderwidth: 1,
-                    xgap: 5,
-                    ygap: 2
+                    borderwidth: 1
                 }
             };
             
@@ -785,19 +796,23 @@
             }], {
                 title: 'Линейный спектр — определите дефект',
                 xaxis: { range: [0, 500] },
-                margin: { t: 30, b: 40, l: 60, r: 20 },
+                margin: { t: 40, b: 50, l: 70, r: 20 },
                 showlegend: false
             }, { responsive: true, displayModeBar: false });
             
             const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
+            const maxDbEx = Math.max(...ampDb);
+            const yMinEx = Math.max(-100, Math.min(-80, maxDbEx - 40));
+            const yMaxEx = maxDbEx + 10;
+            
             Plotly.newPlot('exam-plot2', [{
                 x: xf, y: ampDb, type: 'scatter', mode: 'lines',
                 line: { color: '#800080', width: 1 }
             }], {
                 title: 'Логарифмический спектр — ищите боковые полосы!',
                 xaxis: { range: [0, 500] },
-                yaxis: { range: [-80, Math.max(...ampDb) + 5] },
-                margin: { t: 30, b: 40, l: 60, r: 20 },
+                yaxis: { range: [yMinEx, yMaxEx] },
+                margin: { t: 50, b: 60, l: 70, r: 20 },
                 showlegend: false
             }, { responsive: true, displayModeBar: false });
         }
