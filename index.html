@@ -185,7 +185,6 @@
         <p class="subtitle">Генератор спектров огибающей с дефектами подшипников</p>
         
         <div class="main-layout">
-            <!-- Боковая панель -->
             <div class="sidebar">
                 <h2>⚙️ Параметры</h2>
                 
@@ -248,9 +247,7 @@
                 </div>
             </div>
             
-            <!-- Основной контент -->
             <div class="content">
-                <!-- Информация -->
                 <div class="info-grid">
                     <div class="info-card">
                         <h3>📊 Расчетные частоты</h3>
@@ -280,7 +277,6 @@
                     </div>
                 </div>
                 
-                <!-- Графики -->
                 <div class="plot-container">
                     <h3 style="margin-bottom: 12px;">📈 Графики анализа</h3>
                     <div id="plot1" style="height: 200px;"></div>
@@ -289,7 +285,6 @@
                     <div id="plot4" style="height: 200px; margin-top: 12px;"></div>
                 </div>
                 
-                <!-- Игра -->
                 <div class="exam-section">
                     <h2>🎓 Игра "Угадай дефект"</h2>
                     <div class="exam-buttons">
@@ -312,9 +307,6 @@
     </div>
 
     <script>
-        // ============================================================
-        // БАЗА ДАННЫХ ПОДШИПНИКОВ
-        // ============================================================
         const BEARINGS_DB = {
             '6205':  { n: 9,  d: 7.94,  D: 38.5,  alpha: 0,  type: 'Радиальный шариковый' },
             '6208':  { n: 9,  d: 12.70, D: 57.0,  alpha: 0,  type: 'Радиальный шариковый' },
@@ -330,9 +322,6 @@
 
         let examData = null;
 
-        // ============================================================
-        // МАТЕМАТИЧЕСКИЕ ФУНКЦИИ
-        // ============================================================
         function calculateFrequencies(bearingName, rpm) {
             const b = BEARINGS_DB[bearingName];
             const fr = rpm / 60.0;
@@ -426,9 +415,6 @@
 
         function bandpassFilter(signal, fLow, fHigh, fs) {
             const filtered = [];
-            const omegaLow = 2 * Math.PI * fLow / fs;
-            const omegaHigh = 2 * Math.PI * fHigh / fs;
-            
             for (let i = 0; i < signal.length; i++) {
                 let sum = 0;
                 const windowSize = Math.floor(fs / (fHigh - fLow));
@@ -484,9 +470,6 @@
             return { xf, amplitude };
         }
 
-        // ============================================================
-        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
-        // ============================================================
         function updateDisplay() {
             const bearing = document.getElementById('bearing').value;
             const rpm = parseInt(document.getElementById('rpm').value);
@@ -559,7 +542,6 @@
             Plotly.newPlot('plot2', data, layout, { responsive: true, displayModeBar: false });
         }
 
-        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ С ЛЕГЕНДОЙ
         function plotSpectrumLinear(xf, amplitude, freqs) {
             const data = [{
                 x: xf,
@@ -601,7 +583,7 @@
                             size: 0,
                             symbol: 'line-ns-open'
                         },
-                        name: `${defectName}=${fVal.toFixed(1)} Гц`,
+                        name: `${defectName}=${fVal.toFixed(1)}`,
                         showlegend: true,
                         hoverinfo: 'skip'
                     });
@@ -624,22 +606,23 @@
                 title: 'Спектр огибающей (линейная шкала)',
                 xaxis: { title: 'Частота, Гц', range: [0, 500] },
                 yaxis: { title: 'Амплитуда, g' },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 60, b: 40, l: 50, r: 20 },
                 shapes: shapes,
                 showlegend: true,
                 legend: { 
-                    x: 1, 
-                    y: 1, 
-                    xanchor: 'right',
-                    yanchor: 'top',
-                    font: { size: 9 }
+                    orientation: 'h',
+                    x: 0,
+                    y: 1.05,
+                    xanchor: 'left',
+                    yanchor: 'bottom',
+                    font: { size: 8 },
+                    traceorder: 'normal'
                 }
             };
             
             Plotly.newPlot('plot3', data, layout, { responsive: true, displayModeBar: false });
         }
 
-        // ✅ ИСПРАВЛЕННАЯ ФУНКЦИЯ С ЛЕГЕНДОЙ И АННОТАЦИЯМИ
         function plotSpectrumLog(xf, amplitude, freqs) {
             const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
             const maxDb = Math.max(...ampDb);
@@ -680,7 +663,7 @@
                         type: 'scatter',
                         mode: 'markers',
                         marker: { color: color, size: 0 },
-                        name: `${defectName}=${fVal.toFixed(1)} Гц`,
+                        name: `${defectName}=${fVal.toFixed(1)}`,
                         showlegend: true,
                         hoverinfo: 'skip'
                     });
@@ -690,12 +673,12 @@
                         annotations.push({
                             x: fVal,
                             y: ampDb[idx],
-                            text: `${defectName}<br>${fVal.toFixed(1)} Гц`,
+                            text: `${defectName}<br>${fVal.toFixed(1)}`,
                             showarrow: true,
                             arrowhead: 2,
                             ax: 10,
                             ay: -20,
-                            font: { color: color, size: 10 },
+                            font: { color: color, size: 9 },
                             bgcolor: 'white',
                             bordercolor: color,
                             borderwidth: 1
@@ -720,25 +703,24 @@
                 title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
                 xaxis: { title: 'Частота, Гц', range: [0, 500] },
                 yaxis: { title: 'Амплитуда, дБ', range: [-80, maxDb + 5] },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 60, b: 40, l: 50, r: 20 },
                 shapes: shapes,
                 annotations: annotations,
                 showlegend: true,
                 legend: { 
-                    x: 1, 
-                    y: 1, 
-                    xanchor: 'right',
-                    yanchor: 'top',
-                    font: { size: 9 }
+                    orientation: 'h',
+                    x: 0,
+                    y: 1.05,
+                    xanchor: 'left',
+                    yanchor: 'bottom',
+                    font: { size: 8 },
+                    traceorder: 'normal'
                 }
             };
             
             Plotly.newPlot('plot4', data, layout, { responsive: true, displayModeBar: false });
         }
 
-        // ============================================================
-        // ИГРА "УГАДАЙ ДЕФЕКТ"
-        // ============================================================
         function newExamQuestion() {
             const bearings = Object.keys(BEARINGS_DB);
             const bearing = bearings[Math.floor(Math.random() * bearings.length)];
@@ -820,9 +802,6 @@
             document.getElementById('btn-show-answer').disabled = true;
         }
 
-        // ============================================================
-        // ИНИЦИАЛИЗАЦИЯ
-        // ============================================================
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('bearing').addEventListener('change', updateDisplay);
             document.getElementById('rpm').addEventListener('input', updateDisplay);
