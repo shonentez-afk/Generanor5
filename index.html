@@ -13,7 +13,7 @@
             padding: 20px;
         }
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
             background: white;
             border-radius: 12px;
@@ -39,6 +39,7 @@
             background: #f8f9fa;
             padding: 20px;
             border-radius: 8px;
+            height: fit-content;
         }
         .sidebar h2 {
             font-size: 18px;
@@ -115,6 +116,7 @@
             background: white;
             border-radius: 8px;
             padding: 16px;
+            border: 1px solid #e0e0e0;
         }
         .exam-section {
             background: #fff3cd;
@@ -264,7 +266,7 @@
                     </div>
                     
                     <div class="info-card">
-                        <h3>📚 Шпаргалка</h3>
+                        <h3> Шпаргалка</h3>
                         <div style="font-size: 13px; line-height: 1.6;">
                             <strong>Признаки дефектов:</strong><br>
                             • <strong>BPFO</strong>: пики + гармоники, <strong>НЕТ</strong> боковых полос<br>
@@ -272,17 +274,17 @@
                             • <strong>BSF</strong>: пик на <strong>2×BSF</strong> + боковые полосы (шаг = 2×FTF)<br>
                             • <strong>FTF</strong>: очень низкая частота (~0.4× оборотов)<br>
                             <br>
-                            💡 <strong>Совет:</strong> боковые полосы видны только в логарифмической шкале!
+                             <strong>Совет:</strong> боковые полосы видны только в логарифмической шкале!
                         </div>
                     </div>
                 </div>
                 
                 <div class="plot-container">
                     <h3 style="margin-bottom: 12px;">📈 Графики анализа</h3>
-                    <div id="plot1" style="height: 200px;"></div>
-                    <div id="plot2" style="height: 200px; margin-top: 12px;"></div>
-                    <div id="plot3" style="height: 200px; margin-top: 12px;"></div>
-                    <div id="plot4" style="height: 200px; margin-top: 12px;"></div>
+                    <div id="plot1" style="height: 240px;"></div>
+                    <div id="plot2" style="height: 240px; margin-top: 12px;"></div>
+                    <div id="plot3" style="height: 300px; margin-top: 12px;"></div>
+                    <div id="plot4" style="height: 320px; margin-top: 12px;"></div>
                 </div>
                 
                 <div class="exam-section">
@@ -293,8 +295,8 @@
                     </div>
                     <div id="exam-info" class="exam-info" style="display: none;"></div>
                     <div id="exam-plots" style="display: none;">
-                        <div id="exam-plot1" style="height: 180px;"></div>
-                        <div id="exam-plot2" style="height: 180px; margin-top: 8px;"></div>
+                        <div id="exam-plot1" style="height: 220px;"></div>
+                        <div id="exam-plot2" style="height: 240px; margin-top: 8px;"></div>
                     </div>
                     <div id="exam-answer" class="answer-box" style="display: none;"></div>
                 </div>
@@ -514,7 +516,7 @@
                 title: 'Исходный временной сигнал',
                 xaxis: { title: 'Время, мс', range: [0, 50] },
                 yaxis: { title: 'Ускорение, g' },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 40, b: 50, l: 80, r: 30 },
                 showlegend: false
             };
             
@@ -535,7 +537,7 @@
                 title: `Огибающая (fc=${fc} Гц, фильтр ${bandwidth})`,
                 xaxis: { title: 'Время, мс', range: [0, 50] },
                 yaxis: { title: 'Огибающая, g' },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 40, b: 50, l: 80, r: 30 },
                 showlegend: false
             };
             
@@ -548,7 +550,7 @@
                 y: amplitude,
                 type: 'scatter',
                 mode: 'lines',
-                line: { color: '#006400', width: 1 },
+                line: { color: '#006400', width: 1.2 },
                 name: 'Спектр'
             }];
             
@@ -561,7 +563,7 @@
             };
             
             const shapes = [];
-            const maxAmp = Math.max(...amplitude) * 1.1;
+            const maxAmp = Math.max(...amplitude) * 1.15;
             
             for (const [defectName, color] of Object.entries(colors)) {
                 const fVal = freqs[defectName];
@@ -606,17 +608,20 @@
                 title: 'Спектр огибающей (линейная шкала)',
                 xaxis: { title: 'Частота, Гц', range: [0, 500] },
                 yaxis: { title: 'Амплитуда, g' },
-                margin: { t: 60, b: 40, l: 50, r: 20 },
+                margin: { t: 40, b: 50, l: 80, r: 180 },
                 shapes: shapes,
                 showlegend: true,
                 legend: { 
-                    orientation: 'h',
-                    x: 0,
-                    y: 1.05,
+                    orientation: 'v',
+                    x: 1.02,
+                    y: 1,
                     xanchor: 'left',
-                    yanchor: 'bottom',
-                    font: { size: 8 },
-                    traceorder: 'normal'
+                    yanchor: 'top',
+                    font: { size: 10 },
+                    traceorder: 'normal',
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    bordercolor: '#ddd',
+                    borderwidth: 1
                 }
             };
             
@@ -632,7 +637,7 @@
                 y: ampDb,
                 type: 'scatter',
                 mode: 'lines',
-                line: { color: '#800080', width: 1 },
+                line: { color: '#800080', width: 1.2 },
                 name: 'Спектр'
             }];
             
@@ -678,7 +683,7 @@
                             arrowhead: 2,
                             ax: 10,
                             ay: -20,
-                            font: { color: color, size: 9 },
+                            font: { color: color, size: 10 },
                             bgcolor: 'white',
                             bordercolor: color,
                             borderwidth: 1
@@ -703,18 +708,21 @@
                 title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
                 xaxis: { title: 'Частота, Гц', range: [0, 500] },
                 yaxis: { title: 'Амплитуда, дБ', range: [-80, maxDb + 5] },
-                margin: { t: 60, b: 40, l: 50, r: 20 },
+                margin: { t: 40, b: 50, l: 80, r: 180 },
                 shapes: shapes,
                 annotations: annotations,
                 showlegend: true,
                 legend: { 
-                    orientation: 'h',
-                    x: 0,
-                    y: 1.05,
+                    orientation: 'v',
+                    x: 1.02,
+                    y: 1,
                     xanchor: 'left',
-                    yanchor: 'bottom',
-                    font: { size: 8 },
-                    traceorder: 'normal'
+                    yanchor: 'top',
+                    font: { size: 10 },
+                    traceorder: 'normal',
+                    bgcolor: 'rgba(255,255,255,0.9)',
+                    bordercolor: '#ddd',
+                    borderwidth: 1
                 }
             };
             
@@ -762,7 +770,7 @@
             }], {
                 title: 'Линейный спектр — определите дефект',
                 xaxis: { range: [0, 500] },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 30, b: 40, l: 60, r: 20 },
                 showlegend: false
             }, { responsive: true, displayModeBar: false });
             
@@ -774,7 +782,7 @@
                 title: 'Логарифмический спектр — ищите боковые полосы!',
                 xaxis: { range: [0, 500] },
                 yaxis: { range: [-80, Math.max(...ampDb) + 5] },
-                margin: { t: 30, b: 40, l: 50, r: 20 },
+                margin: { t: 30, b: 40, l: 60, r: 20 },
                 showlegend: false
             }, { responsive: true, displayModeBar: false });
         }
