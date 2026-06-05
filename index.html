@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Виртуальный стенд вибродиагностики</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0077FF;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 24px;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .sidebar h2 {
+            font-size: 18px;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .field {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 6px;
+        }
+        select, input[type="range"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        input[type="range"] {
+            padding: 0;
+        }
+        .value-display {
+            display: inline-block;
+            background: #0077FF;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .info-card {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .info-card h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            padding: 6px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        td:first-child {
+            font-weight: 600;
+            color: #555;
+        }
+        td:last-child {
+            text-align: right;
+            color: #0077FF;
+            font-weight: bold;
+        }
+        .plot-container {
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        .exam-section {
+            background: #fff3cd;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+        }
+        .exam-section h2 {
+            color: #856404;
+            margin-bottom: 16px;
+        }
+        .exam-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .btn-primary {
+            background: #0077FF;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .exam-info {
+            background: white;
+            padding: 16px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .answer-box {
+            background: #d4edda;
+            padding: 16px;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+            margin-top: 16px;
+        }
+        .answer-box h4 {
+            color: #155724;
+            margin-bottom: 8px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid #e0e0e0;
+            color: #999;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Виртуальный стенд вибродиагностики</h1>
+        <p class="subtitle">Генератор спектров огибающей с дефектами подшипников</p>
+        
+        <div class="main-layout">
+            <!-- Боковая панель -->
+            <div class="sidebar">
+                <h2>⚙️ Параметры</h2>
+                
+                <div class="field">
+                    <label>🔩 Подшипник</label>
+                    <select id="bearing">
+                        <option value="6205">6205</option>
+                        <option value="6208">6208</option>
+                        <option value="6305">6305</option>
+                        <option value="6308" selected>6308</option>
+                        <option value="6310">6310</option>
+                        <option value="6312">6312</option>
+                        <option value="22210">22210</option>
+                        <option value="22220">22220</option>
+                        <option value="30210">30210</option>
+                        <option value="7014">7014</option>
+                    </select>
+                    <div id="bearing-type" style="font-size: 11px; color: #666; margin-top: 4px;"></div>
+                </div>
+                
+                <div class="field">
+                    <label>🔄 Обороты (об/мин) <span class="value-display" id="rpm-value">1500</span></label>
+                    <input type="range" id="rpm" min="300" max="3600" step="50" value="1500">
+                </div>
+                
+                <div class="field">
+                    <label>📡 Центральная частота fc (Гц)</label>
+                    <select id="fc">
+                        <option value="800">800</option>
+                        <option value="1600">1600</option>
+                        <option value="2500" selected>2500</option>
+                        <option value="4000">4000</option>
+                        <option value="5000">5000</option>
+                        <option value="6300">6300</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>🔧 Тип фильтра</label>
+                    <select id="bandwidth">
+                        <option value="1/3 октавы" selected>1/3 октавы</option>
+                        <option value="1 октава">1 октава</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>⚠️ Тип дефекта</label>
+                    <select id="defect">
+                        <option value="none">Без дефекта</option>
+                        <option value="BPFO" selected>BPFO (Наружное)</option>
+                        <option value="BPFI">BPFI (Внутреннее)</option>
+                        <option value="BSF">BSF (Тело качения)</option>
+                        <option value="FTF">FTF (Сепаратор)</option>
+                    </select>
+                </div>
+                
+                <div class="field">
+                    <label>📈 Стадия дефекта <span class="value-display" id="stage-value">2</span></label>
+                    <input type="range" id="stage" min="1" max="4" step="1" value="2">
+                </div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="content">
+                <!-- Информация -->
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h3>📊 Расчетные частоты</h3>
+                        <table id="freq-table">
+                            <tr><td>BPFO (наружное)</td><td id="bpfo">—</td></tr>
+                            <tr><td>BPFI (внутреннее)</td><td id="bpfi">—</td></tr>
+                            <tr><td>BSF (тело качения)</td><td id="bsf">—</td></tr>
+                            <tr><td>FTF (сепаратор)</td><td id="ftf">—</td></tr>
+                            <tr><td>2×BSF (дефект тела)</td><td id="bsf2">—</td></tr>
+                        </table>
+                        <div style="margin-top: 12px; font-size: 13px; color: #666;">
+                            Обороты: <strong id="fr-display">—</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>📚 Шпаргалка</h3>
+                        <div style="font-size: 13px; line-height: 1.6;">
+                            <strong>Признаки дефектов:</strong><br>
+                            • <strong>BPFO</strong>: пики + гармоники, <strong>НЕТ</strong> боковых полос<br>
+                            • <strong>BPFI</strong>: пик + боковые полосы (шаг = 1× оборотов)<br>
+                            • <strong>BSF</strong>: пик на <strong>2×BSF</strong> + боковые полосы (шаг = 2×FTF)<br>
+                            • <strong>FTF</strong>: очень низкая частота (~0.4× оборотов)<br>
+                            <br>
+                            💡 <strong>Совет:</strong> боковые полосы видны только в логарифмической шкале!
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Графики -->
+                <div class="plot-container">
+                    <h3 style="margin-bottom: 12px;">📈 Графики анализа</h3>
+                    <div id="plot1" style="height: 200px;"></div>
+                    <div id="plot2" style="height: 200px; margin-top: 12px;"></div>
+                    <div id="plot3" style="height: 200px; margin-top: 12px;"></div>
+                    <div id="plot4" style="height: 200px; margin-top: 12px;"></div>
+                </div>
+                
+                <!-- Игра -->
+                <div class="exam-section">
+                    <h2>🎓 Игра "Угадай дефект"</h2>
+                    <div class="exam-buttons">
+                        <button class="btn-primary" onclick="newExamQuestion()">🎲 Новый вопрос</button>
+                        <button class="btn-success" onclick="showExamAnswer()" id="btn-show-answer" disabled>👁️ Показать ответ</button>
+                    </div>
+                    <div id="exam-info" class="exam-info" style="display: none;"></div>
+                    <div id="exam-plots" style="display: none;">
+                        <div id="exam-plot1" style="height: 180px;"></div>
+                        <div id="exam-plot2" style="height: 180px; margin-top: 8px;"></div>
+                    </div>
+                    <div id="exam-answer" class="answer-box" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            © Виртуальный стенд вибродиагностики | Метод спектра огибающей для СД-23
+        </footer>
+    </div>
+
+    <script>
+        // ============================================================
+        // БАЗА ДАННЫХ ПОДШИПНИКОВ
+        // ============================================================
+        const BEARINGS_DB = {
+            '6205':  { n: 9,  d: 7.94,  D: 38.5,  alpha: 0,  type: 'Радиальный шариковый' },
+            '6208':  { n: 9,  d: 12.70, D: 57.0,  alpha: 0,  type: 'Радиальный шариковый' },
+            '6305':  { n: 8,  d: 11.00, D: 43.0,  alpha: 0,  type: 'Радиальный шариковый' },
+            '6308':  { n: 8,  d: 15.08, D: 65.0,  alpha: 0,  type: 'Радиальный шариковый' },
+            '6310':  { n: 8,  d: 18.00, D: 80.0,  alpha: 0,  type: 'Радиальный шариковый' },
+            '6312':  { n: 8,  d: 22.00, D: 95.0,  alpha: 0,  type: 'Радиальный шариковый' },
+            '22210': { n: 28, d: 16.0,  D: 68.0,  alpha: 0,  type: 'Сферический роликовый' },
+            '22220': { n: 28, d: 32.0,  D: 138.0, alpha: 0,  type: 'Сферический роликовый' },
+            '30210': { n: 18, d: 17.0,  D: 68.0,  alpha: 15, type: 'Конический роликовый' },
+            '7014':  { n: 20, d: 11.0,  D: 90.0,  alpha: 15, type: 'Угловой контактный' }
+        };
+
+        let examData = null;
+
+        // ============================================================
+        // МАТЕМАТИЧЕСКИЕ ФУНКЦИИ
+        // ============================================================
+        function calculateFrequencies(bearingName, rpm) {
+            const b = BEARINGS_DB[bearingName];
+            const fr = rpm / 60.0;
+            const d_D = b.d / b.D;
+            const cos_a = Math.cos(b.alpha * Math.PI / 180);
+            
+            return {
+                fr: fr,
+                BPFO: (b.n / 2) * fr * (1 - d_D * cos_a),
+                BPFI: (b.n / 2) * fr * (1 + d_D * cos_a),
+                BSF: (b.D / (2 * b.d)) * fr * (1 - Math.pow(d_D * cos_a, 2)),
+                FTF: (fr / 2) * (1 - d_D * cos_a),
+                '2xBSF': 2 * (b.D / (2 * b.d)) * fr * (1 - Math.pow(d_D * cos_a, 2))
+            };
+        }
+
+        function generateFaultSignal(rpm, bearingName, defectType, stage, duration = 0.3, fs = 50000, resonanceFreq = 2500) {
+            const t = [];
+            const signalData = [];
+            const freqs = calculateFrequencies(bearingName, rpm);
+            const fr = freqs.fr;
+            
+            for (let i = 0; i < duration * fs; i++) {
+                t.push(i / fs);
+                signalData.push((Math.random() - 0.5) * 0.04);
+            }
+            
+            if (defectType === 'none') return { t, signalData, freqs };
+            
+            let faultFreq, modFreq;
+            if (defectType === 'BPFO') { faultFreq = freqs.BPFO; modFreq = null; }
+            else if (defectType === 'BPFI') { faultFreq = freqs.BPFI; modFreq = fr; }
+            else if (defectType === 'BSF') { faultFreq = freqs['2xBSF']; modFreq = 2 * freqs.FTF; }
+            else if (defectType === 'FTF') { faultFreq = freqs.FTF; modFreq = fr; }
+            else return { t, signalData, freqs };
+            
+            const ampDict = { 1: 0.15, 2: 0.4, 3: 0.8, 4: 1.5 };
+            const amplitude = ampDict[stage] || 0.5;
+            const modDict = { 1: 0.1, 2: 0.3, 3: 0.6, 4: 0.85 };
+            const modDepth = modDict[stage] || 0.3;
+            const harmDict = { 1: 1, 2: 2, 3: 3, 4: 5 };
+            const nHarmonics = harmDict[stage] || 2;
+            
+            for (let h = 1; h <= nHarmonics; h++) {
+                const currentFreq = faultFreq * h;
+                const currentAmp = amplitude / h;
+                const impulsePeriod = 1.0 / currentFreq;
+                
+                for (let impTime = 0; impTime < duration; impTime += impulsePeriod) {
+                    const modulation = modFreq ? (1 + modDepth * Math.sin(2 * Math.PI * modFreq * impTime)) : 1.0;
+                    const nSamples = Math.floor(0.003 * fs);
+                    
+                    for (let i = 0; i < nSamples; i++) {
+                        const idx = Math.floor(impTime * fs) + i;
+                        if (idx < signalData.length) {
+                            const impulseT = i / fs;
+                            const resonance = currentAmp * modulation * Math.sin(2 * Math.PI * resonanceFreq * impulseT);
+                            const decay = Math.exp(-800 * impulseT);
+                            signalData[idx] += resonance * decay;
+                        }
+                    }
+                }
+            }
+            
+            return { t, signalData, freqs };
+        }
+
+        function processEnvelope(sig, fs, fc = 2500, bandwidth = '1/3 октавы') {
+            let fLow, fHigh;
+            if (bandwidth === '1/3 октавы') {
+                fLow = fc / 1.122;
+                fHigh = fc * 1.122;
+            } else {
+                fLow = fc / 1.414;
+                fHigh = fc * 1.414;
+            }
+            
+            if (fHigh >= fs / 2) fHigh = (fs / 2) * 0.9;
+            
+            // Упрощенная фильтрация (полосовой фильтр)
+            const filtered = bandpassFilter(sig, fLow, fHigh, fs);
+            
+            // Детектирование огибающей
+            const rectified = filtered.map(Math.abs);
+            const envelope = lowpassFilter(rectified, Math.min(1500, fs / 4), fs);
+            
+            // FFT
+            const { xf, amplitude } = simpleFFT(envelope, fs);
+            
+            // Ограничение до 1000 Гц
+            const mask = xf.map(f => f <= 1000);
+            const xfMasked = xf.filter((_, i) => mask[i]);
+            const ampMasked = amplitude.filter((_, i) => mask[i]);
+            
+            return { xf: xfMasked, amplitude: ampMasked, envelope };
+        }
+
+        function bandpassFilter(signal, fLow, fHigh, fs) {
+            // Упрощенный полосовой фильтр
+            const filtered = [];
+            const omegaLow = 2 * Math.PI * fLow / fs;
+            const omegaHigh = 2 * Math.PI * fHigh / fs;
+            
+            for (let i = 0; i < signal.length; i++) {
+                let sum = 0;
+                const windowSize = Math.floor(fs / (fHigh - fLow));
+                for (let j = Math.max(0, i - windowSize); j <= Math.min(signal.length - 1, i + windowSize); j++) {
+                    const weight = Math.cos(Math.PI * (j - i) / windowSize);
+                    sum += signal[j] * weight;
+                }
+                filtered.push(sum / (2 * windowSize + 1));
+            }
+            return filtered;
+        }
+
+        function lowpassFilter(signal, cutoff, fs) {
+            // Простой ФНЧ (скользящее среднее)
+            const windowSize = Math.floor(fs / cutoff / 2);
+            const filtered = [];
+            
+            for (let i = 0; i < signal.length; i++) {
+                let sum = 0;
+                let count = 0;
+                for (let j = Math.max(0, i - windowSize); j <= Math.min(signal.length - 1, i + windowSize); j++) {
+                    sum += signal[j];
+                    count++;
+                }
+                filtered.push(sum / count);
+            }
+            return filtered;
+        }
+
+        function simpleFFT(signal, fs) {
+            const N = signal.length;
+            const xf = [];
+            const amplitude = [];
+            
+            // Упрощенное БПФ (используем только первые 500 Гц)
+            const maxFreq = 500;
+            const freqStep = fs / N;
+            const numBins = Math.floor(maxFreq / freqStep);
+            
+            for (let k = 0; k < numBins; k++) {
+                const freq = k * freqStep;
+                xf.push(freq);
+                
+                let real = 0, imag = 0;
+                for (let n = 0; n < N; n++) {
+                    const angle = -2 * Math.PI * k * n / N;
+                    real += signal[n] * Math.cos(angle);
+                    imag += signal[n] * Math.sin(angle);
+                }
+                
+                const mag = Math.sqrt(real * real + imag * imag) * 2 / N;
+                amplitude.push(mag);
+            }
+            
+            return { xf, amplitude };
+        }
+
+        // ============================================================
+        // ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
+        // ============================================================
+        function updateDisplay() {
+            const bearing = document.getElementById('bearing').value;
+            const rpm = parseInt(document.getElementById('rpm').value);
+            const fc = parseInt(document.getElementById('fc').value);
+            const bandwidth = document.getElementById('bandwidth').value;
+            const defect = document.getElementById('defect').value;
+            const stage = parseInt(document.getElementById('stage').value);
+            
+            // Обновить отображения значений
+            document.getElementById('rpm-value').textContent = rpm;
+            document.getElementById('stage-value').textContent = stage;
+            document.getElementById('bearing-type').textContent = BEARINGS_DB[bearing].type;
+            
+            // Расчет частот
+            const freqs = calculateFrequencies(bearing, rpm);
+            
+            document.getElementById('bpfo').textContent = freqs.BPFO.toFixed(2) + ' Гц';
+            document.getElementById('bpfi').textContent = freqs.BPFI.toFixed(2) + ' Гц';
+            document.getElementById('bsf').textContent = freqs.BSF.toFixed(2) + ' Гц';
+            document.getElementById('ftf').textContent = freqs.FTF.toFixed(2) + ' Гц';
+            document.getElementById('bsf2').textContent = freqs['2xBSF'].toFixed(2) + ' Гц';
+            document.getElementById('fr-display').textContent = freqs.fr.toFixed(2) + ' Гц (' + rpm + ' об/мин)';
+            
+            // Генерация сигнала
+            const { t, signalData, freqs: f } = generateFaultSignal(rpm, bearing, defect, stage, 0.3, 50000, fc);
+            const { xf, amplitude, envelope } = processEnvelope(signalData, 50000, fc, bandwidth);
+            
+            // Построение графиков
+            plotSignal(t, signalData);
+            plotEnvelope(t, envelope, fc, bandwidth);
+            plotSpectrumLinear(xf, amplitude, freqs);
+            plotSpectrumLog(xf, amplitude, freqs);
+        }
+
+        function plotSignal(t, signal) {
+            const tMs = t.map(x => x * 1000);
+            const data = [{
+                x: tMs,
+                y: signal,
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#4682B4', width: 0.5 }
+            }];
+            
+            const layout = {
+                title: 'Исходный временной сигнал',
+                xaxis: { title: 'Время, мс', range: [0, 50] },
+                yaxis: { title: 'Ускорение, g' },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('plot1', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotEnvelope(t, envelope, fc, bandwidth) {
+            const tMs = t.map(x => x * 1000);
+            const data = [{
+                x: tMs,
+                y: envelope,
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#FF0000', width: 0.8 }
+            }];
+            
+            const layout = {
+                title: `Огибающая (fc=${fc} Гц, фильтр ${bandwidth})`,
+                xaxis: { title: 'Время, мс', range: [0, 50] },
+                yaxis: { title: 'Огибающая, g' },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                showlegend: false
+            };
+            
+            Plotly.newPlot('plot2', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotSpectrumLinear(xf, amplitude, freqs) {
+            const data = [{
+                x: xf,
+                y: amplitude,
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#006400', width: 1 },
+                name: 'Спектр'
+            }];
+            
+            // Добавляем вертикальные линии
+            const colors = {
+                'BPFO': 'red',
+                'BPFI': 'blue',
+                'BSF': 'green',
+                'FTF': 'orange',
+                '2xBSF': 'magenta'
+            };
+            
+            const shapes = [];
+            const annotations = [];
+            
+            for (const [defectName, color] of Object.entries(colors)) {
+                const fVal = freqs[defectName];
+                if (fVal > 0 && fVal < 500) {
+                    shapes.push({
+                        type: 'line',
+                        x0: fVal, x1: fVal,
+                        y0: 0, y1: Math.max(...amplitude) * 1.1,
+                        line: { color: color, width: 2, dash: 'dash' }
+                    });
+                    
+                    for (let h = 2; h <= 3; h++) {
+                        const harmonic = fVal * h;
+                        if (harmonic < 500) {
+                            shapes.push({
+                                type: 'line',
+                                x0: harmonic, x1: harmonic,
+                                y0: 0, y1: Math.max(...amplitude) * 1.1,
+                                line: { color: color, width: 1, dash: 'dot' }
+                            });
+                        }
+                    }
+                }
+            }
+            
+            const layout = {
+                title: 'Спектр огибающей (линейная шкала)',
+                xaxis: { title: 'Частота, Гц', range: [0, 500] },
+                yaxis: { title: 'Амплитуда, g' },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                shapes: shapes,
+                showlegend: true,
+                legend: { x: 1, y: 1, xanchor: 'right' }
+            };
+            
+            Plotly.newPlot('plot3', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        function plotSpectrumLog(xf, amplitude, freqs) {
+            const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
+            
+            const data = [{
+                x: xf,
+                y: ampDb,
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#800080', width: 1 },
+                name: 'Спектр'
+            }];
+            
+            const colors = {
+                'BPFO': 'red',
+                'BPFI': 'blue',
+                'BSF': 'green',
+                'FTF': 'orange',
+                '2xBSF': 'magenta'
+            };
+            
+            const shapes = [];
+            const annotations = [];
+            
+            for (const [defectName, color] of Object.entries(colors)) {
+                const fVal = freqs[defectName];
+                if (fVal > 0 && fVal < 500) {
+                    shapes.push({
+                        type: 'line',
+                        x0: fVal, x1: fVal,
+                        y0: -80, y1: Math.max(...ampDb) + 5,
+                        line: { color: color, width: 2, dash: 'dash' }
+                    });
+                    
+                    // Аннотации
+                    const idx = xf.findIndex(f => Math.abs(f - fVal) < 5);
+                    if (idx >= 0 && ampDb[idx] > -60) {
+                        annotations.push({
+                            x: fVal,
+                            y: ampDb[idx],
+                            text: `${defectName}<br>${fVal.toFixed(1)} Гц`,
+                            showarrow: true,
+                            arrowhead: 2,
+                            ax: 10,
+                            ay: -20,
+                            font: { color: color, size: 10 },
+                            bgcolor: 'white',
+                            bordercolor: color,
+                            borderwidth: 1
+                        });
+                    }
+                    
+                    for (let h = 2; h <= 3; h++) {
+                        const harmonic = fVal * h;
+                        if (harmonic < 500) {
+                            shapes.push({
+                                type: 'line',
+                                x0: harmonic, x1: harmonic,
+                                y0: -80, y1: Math.max(...ampDb) + 5,
+                                line: { color: color, width: 1, dash: 'dot' }
+                            });
+                        }
+                    }
+                }
+            }
+            
+            const layout = {
+                title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
+                xaxis: { title: 'Частота, Гц', range: [0, 500] },
+                yaxis: { title: 'Амплитуда, дБ', range: [-80, Math.max(...ampDb) + 5] },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                shapes: shapes,
+                annotations: annotations,
+                showlegend: true,
+                legend: { x: 1, y: 1, xanchor: 'right' }
+            };
+            
+            Plotly.newPlot('plot4', data, layout, { responsive: true, displayModeBar: false });
+        }
+
+        // ============================================================
+        // ИГРА "УГАДАЙ ДЕФЕКТ"
+        // ============================================================
+        function newExamQuestion() {
+            const bearings = Object.keys(BEARINGS_DB);
+            const bearing = bearings[Math.floor(Math.random() * bearings.length)];
+            const rpms = [750, 1000, 1500, 2000, 3000];
+            const rpm = rpms[Math.floor(Math.random() * rpms.length)];
+            const defects = ['BPFO', 'BPFI', 'BSF', 'FTF'];
+            const defect = defects[Math.floor(Math.random() * defects.length)];
+            const stage = Math.floor(Math.random() * 4) + 1;
+            const fc = [1600, 2500, 4000][Math.floor(Math.random() * 3)];
+            const bandwidth = ['1/3 октавы', '1 октава'][Math.floor(Math.random() * 2)];
+            
+            examData = {
+                bearing, rpm, defect, stage, fc, bandwidth,
+                freqs: calculateFrequencies(bearing, rpm)
+            };
+            
+            document.getElementById('exam-info').style.display = 'block';
+            document.getElementById('exam-info').innerHTML = `
+                <strong>Экзаменационный вопрос:</strong><br>
+                • Подшипник: <strong>${bearing}</strong> (${BEARINGS_DB[bearing].type})<br>
+                • Обороты: <strong>${rpm} об/мин</strong><br>
+                • Центральная частота: <strong>${fc} Гц</strong><br>
+                • Фильтр: <strong>${bandwidth}</strong><br>
+                • Стадия: <strong>${stage}</strong><br>
+                <br>
+                <strong>Определите тип дефекта по спектру ниже!</strong>
+            `;
+            
+            document.getElementById('exam-plots').style.display = 'block';
+            document.getElementById('exam-answer').style.display = 'none';
+            document.getElementById('btn-show-answer').disabled = false;
+            
+            // Генерация графика экзамена
+            const { signalData } = generateFaultSignal(rpm, bearing, defect, stage, 0.3, 50000, fc);
+            const { xf, amplitude } = processEnvelope(signalData, 50000, fc, bandwidth);
+            
+            // Линейный спектр
+            Plotly.newPlot('exam-plot1', [{
+                x: xf, y: amplitude, type: 'scatter', mode: 'lines',
+                line: { color: '#006400', width: 1 }
+            }], {
+                title: 'Линейный спектр — определите дефект',
+                xaxis: { range: [0, 500] },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                showlegend: false
+            }, { responsive: true, displayModeBar: false });
+            
+            // Логарифмический спектр
+            const ampDb = amplitude.map(a => 20 * Math.log10(a + 1e-10));
+            Plotly.newPlot('exam-plot2', [{
+                x: xf, y: ampDb, type: 'scatter', mode: 'lines',
+                line: { color: '#800080', width: 1 }
+            }], {
+                title: 'Логарифмический спектр — ищите боковые полосы!',
+                xaxis: { range: [0, 500] },
+                yaxis: { range: [-80, Math.max(...ampDb) + 5] },
+                margin: { t: 30, b: 40, l: 50, r: 20 },
+                showlegend: false
+            }, { responsive: true, displayModeBar: false });
+        }
+
+        function showExamAnswer() {
+            if (!examData) return;
+            
+            const { defect, freqs, stage } = examData;
+            const answers = {
+                'BPFO': `Частота: <strong>${freqs.BPFO.toFixed(2)} Гц</strong>. Пики на BPFO + гармоники, НЕТ боковых полос`,
+                'BPFI': `Частота: <strong>${freqs.BPFI.toFixed(2)} Гц</strong>. Пик на BPFI + боковые полосы с шагом ${freqs.fr.toFixed(1)} Гц`,
+                'BSF': `Частота: <strong>${freqs['2xBSF'].toFixed(2)} Гц</strong> (2×BSF!). Боковые полосы с шагом ${(2*freqs.FTF).toFixed(2)} Гц`,
+                'FTF': `Частота: <strong>${freqs.FTF.toFixed(2)} Гц</strong> (очень низкая, ~0.4× оборотов)`
+            };
+            
+            const stageNames = { 1: 'начальная', 2: 'ранняя', 3: 'развитая', 4: 'критическая' };
+            
+            document.getElementById('exam-answer').style.display = 'block';
+            document.getElementById('exam-answer').innerHTML = `
+                <h4>✅ Правильный ответ: ${defect}</h4>
+                <p>${answers[defect]}</p>
+                <p>Стадия ${stage}: ${stageNames[stage]}</p>
+            `;
+            
+            document.getElementById('btn-show-answer').disabled = true;
+        }
+
+        // ============================================================
+        // ИНИЦИАЛИЗАЦИЯ
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Обработчики событий
+            document.getElementById('bearing').addEventListener('change', updateDisplay);
+            document.getElementById('rpm').addEventListener('input', updateDisplay);
+            document.getElementById('fc').addEventListener('change', updateDisplay);
+            document.getElementById('bandwidth').addEventListener('change', updateDisplay);
+            document.getElementById('defect').addEventListener('change', updateDisplay);
+            document.getElementById('stage').addEventListener('input', updateDisplay);
+            
+            // Первоначальное отображение
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>
