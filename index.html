@@ -213,7 +213,7 @@
                 </div>
                 
                 <div class="field">
-                    <label>📡 Центральная частота fc (Гц)</label>
+                    <label> Центральная частота fc (Гц)</label>
                     <select id="fc">
                         <option value="800">800</option>
                         <option value="1600">1600</option>
@@ -266,7 +266,7 @@
                     </div>
                     
                     <div class="info-card">
-                        <h3> Шпаргалка</h3>
+                        <h3>📚 Шпаргалка</h3>
                         <div style="font-size: 13px; line-height: 1.6;">
                             <strong>Признаки дефектов:</strong><br>
                             • <strong>BPFO</strong>: пики + гармоники, <strong>НЕТ</strong> боковых полос<br>
@@ -274,13 +274,13 @@
                             • <strong>BSF</strong>: пик на <strong>2×BSF</strong> + боковые полосы (шаг = 2×FTF)<br>
                             • <strong>FTF</strong>: очень низкая частота (~0.4× оборотов)<br>
                             <br>
-                             <strong>Совет:</strong> боковые полосы видны только в логарифмической шкале!
+                            💡 <strong>Совет:</strong> боковые полосы видны только в логарифмической шкале!
                         </div>
                     </div>
                 </div>
                 
                 <div class="plot-container">
-                    <h3 style="margin-bottom: 12px;">📈 Графики анализа</h3>
+                    <h3 style="margin-bottom: 12px;"> Графики анализа</h3>
                     <div id="plot1" style="height: 240px;"></div>
                     <div id="plot2" style="height: 240px; margin-top: 12px;"></div>
                     <div id="plot3" style="height: 300px; margin-top: 12px;"></div>
@@ -516,7 +516,7 @@
                 title: 'Исходный временной сигнал',
                 xaxis: { title: 'Время, мс', range: [0, 50] },
                 yaxis: { title: 'Ускорение, g' },
-                margin: { t: 40, b: 50, l: 80, r: 30 },
+                margin: { t: 40, b: 50, l: 70, r: 20 },
                 showlegend: false
             };
             
@@ -537,7 +537,7 @@
                 title: `Огибающая (fc=${fc} Гц, фильтр ${bandwidth})`,
                 xaxis: { title: 'Время, мс', range: [0, 50] },
                 yaxis: { title: 'Огибающая, g' },
-                margin: { t: 40, b: 50, l: 80, r: 30 },
+                margin: { t: 40, b: 50, l: 70, r: 20 },
                 showlegend: false
             };
             
@@ -606,22 +606,28 @@
             
             const layout = {
                 title: 'Спектр огибающей (линейная шкала)',
-                xaxis: { title: 'Частота, Гц', range: [0, 500] },
+                xaxis: { 
+                    title: 'Частота, Гц', 
+                    range: [0, 500],
+                    domain: [0, 0.85]
+                },
                 yaxis: { title: 'Амплитуда, g' },
-                margin: { t: 40, b: 50, l: 80, r: 180 },
+                margin: { t: 40, b: 50, l: 70, r: 20 },
                 shapes: shapes,
                 showlegend: true,
                 legend: { 
                     orientation: 'v',
-                    x: 1.02,
+                    x: 0.87,
                     y: 1,
                     xanchor: 'left',
                     yanchor: 'top',
-                    font: { size: 10 },
+                    font: { size: 9 },
                     traceorder: 'normal',
-                    bgcolor: 'rgba(255,255,255,0.9)',
+                    bgcolor: 'rgba(255,255,255,0.95)',
                     bordercolor: '#ddd',
-                    borderwidth: 1
+                    borderwidth: 1,
+                    xgap: 5,
+                    ygap: 2
                 }
             };
             
@@ -683,7 +689,7 @@
                             arrowhead: 2,
                             ax: 10,
                             ay: -20,
-                            font: { color: color, size: 10 },
+                            font: { color: color, size: 9 },
                             bgcolor: 'white',
                             bordercolor: color,
                             borderwidth: 1
@@ -706,23 +712,32 @@
             
             const layout = {
                 title: 'Спектр огибающей (логарифмическая шкала) — видны боковые полосы!',
-                xaxis: { title: 'Частота, Гц', range: [0, 500] },
-                yaxis: { title: 'Амплитуда, дБ', range: [-80, maxDb + 5] },
-                margin: { t: 40, b: 50, l: 80, r: 180 },
+                xaxis: { 
+                    title: 'Частота, Гц', 
+                    range: [0, 500],
+                    domain: [0, 0.85]
+                },
+                yaxis: { 
+                    title: 'Амплитуда, дБ', 
+                    range: [-80, maxDb + 5] 
+                },
+                margin: { t: 40, b: 50, l: 70, r: 20 },
                 shapes: shapes,
                 annotations: annotations,
                 showlegend: true,
                 legend: { 
                     orientation: 'v',
-                    x: 1.02,
+                    x: 0.87,
                     y: 1,
                     xanchor: 'left',
                     yanchor: 'top',
-                    font: { size: 10 },
+                    font: { size: 9 },
                     traceorder: 'normal',
-                    bgcolor: 'rgba(255,255,255,0.9)',
+                    bgcolor: 'rgba(255,255,255,0.95)',
                     bordercolor: '#ddd',
-                    borderwidth: 1
+                    borderwidth: 1,
+                    xgap: 5,
+                    ygap: 2
                 }
             };
             
