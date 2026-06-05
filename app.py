@@ -182,7 +182,7 @@ axes[1].set_xlim(0, 50)
 axes[1].grid(True, alpha=0.3)
 
 # 3. Линейный спектр
-axes[2].plot(xf_env, amp_env, linewidth=0.8, color='darkgreen')
+axes[2].plot(xf_env, amp_env, linewidth=0.8, color='darkgreen', label='Спектр')
 axes[2].set_title('Спектр огибающей (линейная шкала)')
 axes[2].set_ylabel('Амплитуда, g')
 axes[2].set_xlim(0, 500)
@@ -190,12 +190,64 @@ axes[2].grid(True, alpha=0.3)
 
 # 4. Логарифмический спектр
 amp_db = 20 * np.log10(amp_env + 1e-10)
-axes[3].plot(xf_env, amp_db, linewidth=0.8, color='purple')
-axes[3].set_title('Спектр огибающей (логарифмическая шкала)')
+axes[3].plot(xf_env, amp_db, linewidth=0.8, color='purple', label='Спектр')
+axes[3].set_title('Спектр огибающей (логарифмическая шкала) — видны боковые полосы!')
 axes[3].set_xlabel('Частота, Гц')
 axes[3].set_ylabel('Амплитуда, дБ')
 axes[3].set_xlim(0, 500)
+axes[3].set_ylim(-80, np.max(amp_db) + 5)  # Улучшенный диапазон
 axes[3].grid(True, alpha=0.3)
+
+# === ВЕРТИКАЛЬНЫЕ ЛИНИИ И ЛЕГЕНДА ДЛЯ ОБОИХ СПЕКТРОВ ===
+colors = {
+    'BPFO': 'red',
+    'BPFI': 'blue', 
+    'BSF': 'green',
+    'FTF': 'orange',
+    '2xBSF': 'magenta'
+}
+
+for ax_idx, ax in enumerate([axes[2], axes[3]]):
+    for defect_name, color in colors.items():
+        f_val = freqs.get(defect_name, 0)
+        if f_val > 0 and f_val < 500:
+            # Основная частота
+            ax.axvline(x=f_val, color=color, linestyle='--', 
+                      linewidth=1.5, alpha=0.7, 
+                      label=f'{defect_name}={f_val:.1f} Гц')
+            
+            # Гармоники
+            for h in [2, 3]:
+                harmonic = f_val * h
+                if harmonic < 500:
+                    ax.axvline(x=harmonic, color=color, linestyle=':', 
+                              linewidth=1, alpha=0.5)
+    
+    # Легенда на обоих графиках
+    ax.legend(loc='upper right', fontsize=7, ncol=2)
+    
+    # АННОТАЦИИ (подписи частот) — только на логарифмическом для наглядности
+    if ax_idx == 1:  # Только для логарифмического
+        for defect_name, color in colors.items():
+            f_val = freqs.get(defect_name, 0)
+            if f_val > 0 and f_val < 500:
+                idx = np.argmin(np.abs(xf_env - f_val))
+                amp_at_freq = amp_db[idx]
+                
+                # Подпись только если амплитуда значимая
+                if amp_at_freq > -60:
+                    ax.annotate(
+                        f'{defect_name}\n{f_val:.1f} Гц',
+                        xy=(f_val, amp_at_freq),
+                        xytext=(5, 15),
+                        textcoords='offset points',
+                        fontsize=7,
+                        color=color,
+                        fontweight='bold',
+                        bbox=dict(boxstyle='round,pad=0.3', 
+                                 facecolor='white', alpha=0.8, 
+                                 edgecolor=color)
+                    )
 
 plt.tight_layout()
 st.pyplot(fig)
