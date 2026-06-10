@@ -8,6 +8,16 @@
 
 **Нажмите на кнопку выше** — notebook откроется в Google Colab и сразу заработает!
 
+## 🌐 Streamlit
+
+Открыть приложение: [https://zany-telegram-4qjvq5wrv59737wwp-8501.app.github.dev/](https://zany-telegram-4qjvq5wrv59737wwp-8501.app.github.dev/)
+
+Для локального запуска приложения:
+
+```bash
+streamlit run app.py
+```
+
 ## 📖 Что умеет
 
 - 🎛️ Генерация спектров огибающей с дефектами BPFO, BPFI, BSF, FTF
